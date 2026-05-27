@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><title>Pure Vessel Project</title><meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui=1"><meta charset="UTF-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content=""><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icon64.png"><link rel="apple-touch-icon" sizes="180x180" href="icon180.png"><link rel="icon" type="image/png" sizes="32x32" href="icon32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon16.png"><style>html,body {
+<!DOCTYPE html><html><head><title>little box, big rectangle</title><meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui=1"><meta charset="UTF-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content=""><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icon64.png"><link rel="apple-touch-icon" sizes="180x180" href="icon180.png"><link rel="icon" type="image/png" sizes="32x32" href="icon32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon16.png"><style>html,body {
   margin: 0;
   padding: 0;
   background-color: #000;
@@ -60,7 +60,6 @@ window.addEventListener("load",function() {
 </script><script id="code" type="text/x-microscript">
 
 //source to store all current classes
-
 //class made to create shapes of any variety as documented by matter.js
 class Shapes {
   //method to create multiple rectangles
@@ -153,7 +152,7 @@ class Characters {
 window.Shapes = Shapes;
 window.Characters = Characters;
 
-
+//function to set the arena up
 function initArena(){
   //adds the floor
   floorHeight = 10
@@ -164,15 +163,9 @@ function initArena(){
   })
   floor.label = "ground"
   Matter.Composite.add(engine.world, floor)
-  
   //adds the walls
   lwall = Shapes.createBox(-(screen.width/2), 0, 10, screen.height, {isStatic:true, friction:0, label:"wallLeft"})
   rwall = Shapes.createBox(screen.width/2, 0, 10, screen.height, {isStatic:true, friction:0, label:"wallRight"})
-  
-}
-
-function drawArena(){
-  
 }
 
 function initAttack(){
@@ -187,25 +180,22 @@ function initAttack(){
   dnail = Shapes.createTrap(500, 500, 3*(playerHeight), 3.6*(playerHeight), 0.4, {isSensor:true, label: "attack"})
   rnail = Shapes.createTrap(500, 500, 3*(playerHeight), 3.6*(playerHeight), 0.4, {isSensor:true, label: "attack", angle: Math.PI/2 + 0.1})
   lnail = Shapes.createTrap(500, 500, 3*(playerHeight), 3.6*(playerHeight), 0.4, {isSensor:true, label: "attack", angle: -Math.PI/2 - 0.1})
-  
 }
-
 //repeated code
-function simplicity(direction){
+function simplicity(){
   attackTimer = 30
   attacking = true
 }
-
 function updateAttack(){
-  
+//only lets you attack while you are able to dash
 if(dashTimer == 0){
+  //dashes in all directions
   if(keyboard.press.ARROWUP){
     if(attacking==false){
       direction = "up"
       simplicity()
       hasAttacked = true
     }
-    
   }
   if(keyboard.press.ARROWRIGHT){
     if(attacking==false){
@@ -213,7 +203,6 @@ if(dashTimer == 0){
       simplicity()
       hasAttacked = true
     }
-
   }
   if(keyboard.press.ARROWLEFT){
     if(attacking==false){
@@ -221,7 +210,6 @@ if(dashTimer == 0){
       simplicity()
       hasAttacked = true
     }
-
   }
   if(keyboard.press.ARROWDOWN){
     if(attacking==false){
@@ -230,10 +218,9 @@ if(dashTimer == 0){
       simplicity()
       hasAttacked = true
     }
-    
   }
 }
-
+  //moves the nails to the player's position and offsets them
   if(attackTimer>0 && direction == "up"){
     Matter.Body.setPosition(unail, {x: player.position.x, y: player.position.y + 40})
   }
@@ -246,11 +233,12 @@ if(dashTimer == 0){
   if(attackTimer>0 && direction == "down"){
     Matter.Body.setPosition(dnail, {x: player.position.x, y: player.position.y - 40})
   }
-  
+  //timer countdown code
   if(attackTimer > 0){
     attackTimer--
-
   }
+  //moves the nails offscreen once time is over
+  //also resets all variables called
   if(attackTimer == 0 && hasAttacked == true){
     attacking = false
     direction = ""
@@ -258,28 +246,24 @@ if(dashTimer == 0){
     Matter.Body.setPosition(dnail, {x: 500, y: 500});
     Matter.Body.setPosition(rnail, {x: 500, y: 500});
     Matter.Body.setPosition(lnail, {x: 500, y: 500});
-    //setTimeout(function(){
     down = false
-    //}, 500)
     hasAttacked = false
   }
   
 }
 
-function drawAttack(){
-  
-}
-
+//detects collisions
 function initCollisions(){
   Matter.Events.on(engine, "collisionStart", function(event){
     event.pairs.forEach(function(pair) {
+      //detects if the player is on the ground
       if((pair.bodyA == player && pair.bodyB.label == "ground") ||
       (pair.bodyA.label == "ground" && pair.bodyB == player)){
         playerGrounded = true
         pogo = false
         hasDouble = true
       }
-      
+      //detects if the player hits a hazard that makes it lose health
       if((pair.bodyA == player && pair.bodyB.label == "hazard") || 
       (pair.bodyA.label == "hazard" && pair.bodyB == player)||
       (pair.bodyA == player && pair.bodyB.label == "boss")||
@@ -288,14 +272,11 @@ function initCollisions(){
           health--
           playerIFrames = 60
         }
-        //print(JSON.stringify(Matter.Vector.mult(Matter.Vector.normalise(Matter.Vector.neg(vector(vessel, player))),0.01)))
-        
       }
-      
+      //player hitting the boss or its attacks
       if((pair.bodyA.label == "attack" && (pair.bodyB.label == "boss" || pair.bodyB.label == "hazard"))||
       ((pair.bodyA.label == "boss" || pair.bodyA.label == "hazard") && pair.bodyB.label == "attack")){
         if(pair.bodyA.label == "hazard" || pair.bodyB.label == "hazard"){
-          
         }else{
           bossHealth--
         }
@@ -306,18 +287,15 @@ function initCollisions(){
           Matter.Body.setVelocity(player, {x: player.velocity.x, y: 3})
         }
       }
-      
+      //resetting double jump on pogo
       if((pair.bodyA.label == "attack" && pair.bodyB.label == "hazard")){
         hasDouble = true
-        
       }else if (pair.bodyA.label == "hazard" && pair.bodyB.label == "attack"){
         hasDouble = true
-        
       }
-      
     })
   })
-  
+  //player is not on ground if not touching ground
   Matter.Events.on(engine, "collisionEnd", function(event){
     event.pairs.forEach(function(pair) {
       if((pair.bodyA == player && pair.bodyB.label == "ground") ||
@@ -328,79 +306,22 @@ function initCollisions(){
   })
 }
 
-function listWorldObjects() {
-  // 1. Grab every single active physics body from the world composite
-  var allBodies = Matter.Composite.allBodies(engine.world);
-  
-  print("--- Objects in engine.world (" + allBodies.length + " total) ---");
-  
-  // 2. Loop through the array and print each label
-  for (var i = 0; i < allBodies.length; i++) {
-    var body = allBodies[i];
-    
-    // Fallback text if you forgot to give the body a custom label
-    var name = body.label ? body.label : "Unnamed Body";
-    
-    print("[" + i + "] " + name + " (ID: " + body.id + ")");
-  }
-}
-
-function listWorldVariableNames() {
-  var allBodies = Matter.Composite.allBodies(engine.world);
-  
-  print("--- Matching Variable Names in engine.world ---");
-  
-  for (var i = 0; i < allBodies.length; i++) {
-    var body = allBodies[i];
-    var variableName = "No Global Variable Found";
-    
-    for (var key in window) {
-      // Wrap the checks inside a try/catch block to swallow security restrictions
-      try {
-        // If the value in this global slot matches our physics body reference
-        if (window[key] === body) {
-          variableName = key;
-          break;
-        }
-        
-        // Check if the body belongs to a class instance object
-        if (window[key] && window[key].body === body) {
-          variableName = key + " (.body)";
-          break;
-        }
-      } catch (error) {
-        // If the browser blocks access to a cross-origin property, 
-        // it triggers this catch block and safely skips it without crashing!
-        continue;
-      }
-    }
-    
-    print("[" + i + "] Variable: " + variableName + " | ID: " + body.id);
-  }
-}
-
 function hitboxes(){
-  // 1. Get an array of every single physics body in the world
+  //stores all physics bodies in the simulation
   var allBodies = Matter.Composite.allBodies(engine.world);
-
-  // 2. Loop through each body one by one
+  //loop to go through each body
   for (var i = 0; i < allBodies.length; i++) {
     var body = allBodies[i];
-    
-    // Matter.js stores corners in an array: [{x, y}, {x, y}, {x, y}, ...]
+    //stores each body's vertices
     var vertices = body.vertices;
-    
-    // Create flat arrays to hold coordinates format microStudio expects: [x1, y1, x2, y2, ...]
+    //stores that bodies coordinates
     var polyCoordinates = [];
-    
-    // 3. Extract the x and y coordinates from the body's vertices
+    //takes the x and y coordinates out of the list
     for (var j = 0; j < vertices.length; j++) {
       polyCoordinates.push(vertices[j].x);
       polyCoordinates.push(vertices[j].y);
     }
-    
-    // 4. Draw the wireframe outline on the screen
-    // Arguments: coordinates array, color, closed (true/false)
+    //draws the body based off the vertices
     if(allBodies[i].label == "hazard"){
       screen.drawPolygon(polyCoordinates, "rgb(255, 0, 0)")
     }else if(allBodies[i].label == "warning"){
@@ -411,51 +332,25 @@ function hitboxes(){
       screen.drawPolygon(polyCoordinates, "rgb(73, 216, 230)")
     }else if(allBodies[i].label == "player"){
       screen.drawPolygon(polyCoordinates, "rgb(0, 255, 0)")
-    }
-    else{
+    }else{
       screen.drawPolygon(polyCoordinates, "rgb(0, 255, 0)")
     }
-    
   }
 }
 
-
-function initHazards(){
-  //adds a test hazard
-  spike = Matter.Bodies.rectangle(50, 0, 50, 10, {
-    isStatic: true,
-    friction: 0,
-    isSensor: true,
-    restitution: 0
-  })
-  Matter.Composite.add(engine.world, spike)
-  spike.label = "hazard"
-
-  
-}
-
-function updateHazards(){
-  
-}
-
-function drawHazards(){
-  screen.drawRect(spike.position.x,spike.position.y, 50, 10, "rgb(255,0,0")
-  
-  }
-
+//function to draw the HUD
 function drawHUD(){
   //health points
   for(var i = 0; i<5; i++){
     if(i<health){
-      screen.fillRound(-185+18*i, 90, 15, 15, "rgb(255,255,255)")
+      screen.fillRound(-150+18*i, 90, 15, 15, "rgb(255,255,255)")
     }else{
-      screen.fillRound(-185+18*i, 90, 15, 15, "rgb(100,100,100)")
+      screen.fillRound(-150+18*i, 90, 15, 15, "rgb(100,100,100)")
     }
   }
-  
-  screen.fillRect(140, 85, 100, 15, "rgb(100,100,100)")
-  screen.fillRect(140+50-bossHealth/2, 85, bossHealth, 15, "rgb(255,255,255)")
-
+  //boss health
+  screen.fillRect(120, 85, 100, 15, "rgb(100,100,100)")
+  screen.fillRect(120+50-bossHealth/2, 85, bossHealth, 15, "rgb(255,255,255)")
   if(health == 0){
     screen.drawText("Press ENTER to start", 0, 0, 30, "rgb(255,255,255)")
     screen.drawText("Don't Play in Fullscreen", 0, -20, 15, "rgb(255,255,255)")
@@ -464,109 +359,61 @@ function drawHUD(){
     screen.drawText("YOU WIN", 0, 0, 30, "rgb(255,255,255)")
     screen.drawText("Press Enter To Play Again", 0, -20, 15, "rgb(255,255,255)")
   }
-  
 }
 
+//variables that run before init
+//variables stored for everything else
 playerGrounded = false
 jump = 0
 health = 0
 pogo = false
 bossHealth = 100
-
-knockbackContact = false
-
+//init runs before the update loop and draw loop
+//calls all the other initiliaztion functions from the other sources
 init = function() {
   engine = Matter.Engine.create()
   engine.world.gravity.y = 0
-  
   initCollisions()
-  
   initPlayer()
-  
   initAttack()
-  
   initArena()
-  
   initBoss()
-  
-//  initHazards()
-  
   initLegs()
-  
   initFocus()
-  
   initDash()
-  
   initBossJump()
-  
   initBossTeleport()
-  
   initSpikes()
-  
   initSlash()
-  
   initRockets()
-  
 }
-
+//function to update everything
+//loops 60 times in a second
 update = function() {
   Matter.Engine.update(engine, 1000/60);
-  
   updateAttack();
-    
   updatePlayer()
-  
   updateBoss()
-  
   clearOffScreenHazards()
-  
   updateLegs()
-  
   updateFocus()
-  
   updateDash()
-  
   updateBossJump()
-  
   updateBossTeleport()
-  
   updateSpikes()
-  
   updateSlash()
-  
   updateRockets()
-  
-//  updateHazards()  
-
-//  print(Matter.Vector.magnitude(vector(vessel, player)))
-
-
-
-//debug
-//  listWorldObjects();
-//  listWorldVariableNames();
 }
-
+//function to draw certain aspects
 draw = function() {
   screen.clear()
-  
-  //drawPlayer()
-
-  //drawGround()
-  
   drawHUD()
-  
-//  drawHazards()
-  
-//  vessel.draw();
-  
   drawRocketsWarning()
-  
-//debug
- hitboxes()
+  hitboxes()
 
 }
 
+//function that stores the player's initial conditions
 function initPlayer(){
   //adds the player
   //determines if the player can double jump
@@ -586,20 +433,18 @@ function initPlayer(){
   })
   Matter.Composite.add(engine.world, player)
 }
-
+//function to update the player
 function updatePlayer(){
-  
   //gravity
   Matter.Body.applyForce(player, player.position, { x: 0, y: -0.000075 })
-  
+  //counts the player's invincibilyt frames down
   if(playerIFrames > 0){
     playerIFrames--
   }
-  
+  //makes sure that the player is above the floor
   if(player.position.y < floor.position.y){
     Matter.Body.setPosition(player, {x:player.position.x, y:floor.position.y+floorHeight/2+playerHeight/2})
   }
-  
   //jump
   if(keyboard.press.SPACE){
     if(playerGrounded){
@@ -611,14 +456,11 @@ function updatePlayer(){
       pogo = false
     }
   }
-
   //prevents mid air stops by tapping W then tapping again
   if(pogo == false && playerGrounded == false && (keyboard.SPACE == false) && player.velocity.y>0){
     Matter.Body.setVelocity(player, { x: player.velocity.x, y: -1})
   }
-  
   //left and right movement
-
   if(keyboard.A){
     Matter.Body.setVelocity(player, { x: -3, y: player.velocity.y})
     playerDirection = "left"
@@ -628,12 +470,10 @@ function updatePlayer(){
   } else if (attackTimer < 20){
     Matter.Body.setVelocity(player, { x: 0, y: player.velocity.y})
   }
-  
   //sets max fall speed to -5
   if(player.velocity.y<-5){
     Matter.Body.setVelocity(player,{x: player.velocity.x, y: -5})
   }
-  
   //dashing
   if(playerGrounded){
     hasDash = true
@@ -663,8 +503,6 @@ function updatePlayer(){
   if(dashTimer == 0 && dashCooldown > 0){
     dashCooldown--
   }
-  
-  
   //prevents player from going out of bounds
   if(player.position.x<lwall.position.x+9){
     Matter.Body.setPosition(player, {x: lwall.position.x+10, y:player.position.y})
@@ -672,13 +510,11 @@ function updatePlayer(){
   if(player.position.x>rwall.position.x-9){
     Matter.Body.setPosition(player, {x: rwall.position.x-10, y:player.position.y})
   }
-  
   //death screem
   if(health == 0){
     bossAttackCycle = false
     Matter.Body.setPosition(vessel, {x: 0, y: 1000})
     bossHealth = 100
-    
     //removes all hazard
     var allCurrentBodies = Matter.Composite.allBodies(engine.world)
     for(var i = 0; i < allCurrentBodies.length; i++){
@@ -687,33 +523,22 @@ function updatePlayer(){
       }
     }
   }
-  
 }
-
-function drawPlayer(){
-  //draws the player
-  screen.drawRect(player.position.x, player.position.y, playerWidth, playerHeight, "#FF0")
-}
-
-
-
-
-
 
 function initBoss(){
+  //developmental variables for giving the boss invincibility frames and for its attack cycle
   vesseliframes = 0
-  currentlyAttacking = false
   bossAttackCycle = false
-  
+  //creating the boss itself and spawning him off screen
   vessel = new Characters("purevessel", 0, 1000, 40, 60, {isSensor: true, label: "boss"});
-  
-  //moves = [3, 3, 3, 3, 3, 3, 3, 3]
+  //list storing the moveset of all possible attacks
   moves = [0, 1, 2, 3, 4, 5, 6, 7]
   moveChoice = null
   delayMove = 0
 }
-
+//function to udpate the boss
 function updateBoss(){
+  //resets the boss
   if(keyboard.ENTER){
     if(bossAttackCycle == false){
       audio.playMusic("purevessel", .3)
@@ -726,11 +551,12 @@ function updateBoss(){
     }
     bossAttackCycle = true
   }
-  
+  //determines if the boss can attack again
   if(bossAttackCycle){
     if(delayMove>0){
       delayMove--
     }
+    //choose a new random move after a certain interval
     if(delayMove == 0){
       moveChoice = moves[Math.floor(Math.random() * moves.length)]
       if(moveChoice == 0){
@@ -760,33 +586,21 @@ function updateBoss(){
       }
     }
   }
-  
+  //lowers the boss's i-frames after being hurt
   if(vesseliframes > 0){
     vesseliframes--
   }
-  
-  if(attackingLegs){
-    currentlyAttacking = attackingLegs
-  } else if(attackingFocus){
-    currentlyAttacking = attackingFocus
-  }else if(attackingDash){
-    currentlyAttacking = attackingDash
-  }else if(currentlySlashing){
-    currentlyAttacking = currentlySlashing
-  }
-  
-  
+  //ensures the boss can't walk/dash/teleport off screen
   if(vessel.position.x<lwall.position.x+20){
     Matter.Body.setPosition(vessel, {x: lwall.position.x+24, y:vessel.position.y})
   }
   if(vessel.position.x>rwall.position.x-20){
     Matter.Body.setPosition(vessel, {x: rwall.position.x-24, y:vessel.position.y})
   }
-  
+  //moves the boss off screen once it dies
   if(bossHealth == 0){
     bossAttackCycle = false
     Matter.Body.setPosition(vessel, {x: 0, y: 1000})
-    
     //removes all hazard
     var allCurrentBodies = Matter.Composite.allBodies(engine.world)
     for(var i = 0; i < allCurrentBodies.length; i++){
@@ -795,6 +609,7 @@ function updateBoss(){
       }
     }
   }
+  //makes sure the boss does get negative health after death
   if(bossHealth < 0){
     bossHealth = 0
   }
@@ -806,7 +621,7 @@ function initBossJump(){
   jumpingTo = null
   bossJumpTimer = 0
 }
-
+//makes the boss jump across the screen
 function bossJumpFull(){
   //determines if the boss will jump to the left or right
   if(vessel.position.x>0){
@@ -823,7 +638,7 @@ function bossJumpFull(){
   bossJumpTimer = 30
   jumpDeltaTheta = Math.PI/bossJumpTimer
 }
-
+//function to make the boss jump above you
 function bossJumpTop(){
   //determines if the boss will jump to the left or right
   if(vessel.position.x>0){
@@ -841,7 +656,7 @@ function bossJumpTop(){
   bossJumpTimer = 15
   jumpDeltaTheta = Math.PI/bossJumpTimer/2
 }
-
+//makes the boss jump to the opposite side of the player
 function bossJumpOpposite(){
   //determines if the boss will jump to the left or right
   if(player.position.x>0){
@@ -858,17 +673,14 @@ function bossJumpOpposite(){
   bossJumpTimer = 30
   jumpDeltaTheta = Math.PI/bossJumpTimer
 }
-
+//function to update the boss's jump
 function updateBossJump(){
   if(bossJumpTimer > 0){
-    
     if(jumpingTo == "left"){
       jumpCurrentTheta+=jumpDeltaTheta
-      
       Matter.Body.setPosition(vessel, {x: jumpCenter + jumpRadius*Math.cos(jumpCurrentTheta), y: -65+jumpRadius*Math.sin(jumpCurrentTheta)})
     }else if(jumpingTo == "right"){
       jumpCurrentTheta-=jumpDeltaTheta
-      
       Matter.Body.setPosition(vessel, {x: jumpCenter + jumpRadius*Math.cos(jumpCurrentTheta), y: -65+jumpRadius*Math.sin(jumpCurrentTheta)})
     }
     
@@ -880,31 +692,30 @@ function initBossTeleport(){
   teleportFull = false
   teleportTop = false
   teleportOpposite = false
+  //delay used to 
   teleportDelay = 0
   teleportWarnings = []
   teleportWarningMade = false
 }
-
+//teleports the boss to the other side of the screen
 function bossTeleportFull(){
   teleportDelay = 20
   teleportFull = true
 }
-
+//teleports the boss above the player
 function bossTeleportTop(){
   teleportDelay = 20
   teleportTop = true
 }
-
+//teleports the boss to the side of the screen opposite to the player
 function bossTeleportOpposite(){
   teleportDelay = 20
   teleportOpposite = true
 }
-
 function updateBossTeleport(){
   if(teleportDelay > 0){
     teleportDelay--
   }
-  
   if(teleportFull == true && teleportDelay == 0){
   //determines if the boss will teleport to the left or right
     if(vessel.position.x>0){
@@ -924,14 +735,12 @@ function updateBossTeleport(){
     }
     teleportWarningMade = true
   }
-
   if(teleportTop == true && teleportDelay == 0){
     Matter.Body.setPosition(vessel, {x:bossTeleportX,y:bossTeleportY})
     teleportTop = false
     Matter.Composite.remove(engine.world, teleportWarnings)
     teleportWarningMade = false
   }
-  
   if(teleportTop == true && teleportDelay > 0 && teleportWarningMade == false){
     //conditional to ensure the boss does not clip into the wall
     if(player.position.x<-195){
@@ -945,7 +754,6 @@ function updateBossTeleport(){
     teleportWarnings.push(Shapes.createBox(bossTeleportX, bossTeleportY, 20, 20, {isSensor: true, label: "warning", frictionAir: 0, restitution: 1}))
     teleportWarningMade = true
   }
-  
   if(teleportOpposite == true && teleportDelay == 0){
     //determines if the boss will teleport to the left or right
     if(teleportDirection == "left"){
@@ -957,7 +765,6 @@ function updateBossTeleport(){
     teleportWarningMade = false
     Matter.Composite.remove(engine.world, teleportWarnings)
   }
-  
   if(teleportOpposite == true && teleportDelay > 0 && teleportWarningMade == false){
     if(player.position.x>0){
       teleportDirection = "left"
@@ -968,60 +775,35 @@ function updateBossTeleport(){
     }
     teleportWarningMade = true
   }
-  
-  
-  
 }
-
-
-
-
-
-
-function vector(object1, object2){
-  object1x = object1.position.x
-  object1y = object1.position.y
-  object2x = object2.position.x
-  object2y = object2.position.y
- 
-
- screen.drawLine(object1x, object1y, object2x, object2y, "rgb(57, 255, 20)")
- direction = {x: object2x - object1x, y: object2y - object1y}
- return direction
-}
-
-function drawVector(object1, object2){
-  object1x = object1.position.x
-  object1y = object1.position.y
-  object2x = object2.position.x
-  object2y = object2.position.y
-  
-  screen.drawLine(object1x, object1y, object2x, object2y, "rgb(57, 255, 20)")
-}
-
 
 function initDash(){
   attackingDash = false
+  //sets the time the boss dashes for
   bossDashTimer = 0
+  //sets the time the warning for the dash is out for
   warningDashTimer = 0
   dashWarningDrawn = false
   
 }
-
+//function to start the dash
 function dash(){
+  //initial conditions for dash
   warningDashTimer = 50
   bossDashTimer = 15
   attackingDash = true
   dashWarningDrawn = false
   playerToBossDirection = player.position.x-vessel.position.x
+  //determines if dash goes left or right
   if(playerToBossDirection<0){
     bossDashDirection = "left"
   }else{
     bossDashDirection = "right"
   }
 }
-
+//function to update the dshing
 function updateDash(){
+  //draws the warning for the dash
   if(warningDashTimer>0 && dashWarningDrawn == false){
     dashWarningDrawn = true
     if(bossDashDirection == "left"){
@@ -1030,10 +812,10 @@ function updateDash(){
       dashWarning = Shapes.createBox(vessel.position.x+120, vessel.position.y, 200, 50, {isSensor: true, label: "warning", frictionAir: 0, restitution: 1})
     }
   }
+  //ticks down the delay between the warning for the dash and the dash itself
   if(warningDashTimer>0 && dashWarningDrawn){
     warningDashTimer--
   }
-  
   if(bossDashTimer > 0 && warningDashTimer == 0){
     bossDashTimer--
     //preventing the boss from dashing off the screen
@@ -1044,66 +826,58 @@ function updateDash(){
     }else{
       bossDashLength = 15
     }
-
     //moves the boss when dashing
     if(bossDashDirection == "left"){
       Matter.Body.setPosition(vessel,{x:vessel.position.x - bossDashLength, y: vessel.position.y})
     } else{
       Matter.Body.setPosition(vessel,{x:vessel.position.x + bossDashLength, y: vessel.position.y})
     }
-    
   }
-  
   if(bossDashTimer == 0 && attackingDash){
     Matter.Composite.remove(engine.world, dashWarning)
     attackingDash = false
   }
-  
 }
 
-
-
-
-
-
-
+//initialization variables
 function initFocus(){
+  //variables for a timer, whether its attacking, and some others to be used later
   focusTimer = 0
-  circleCountUp = 1
   attackingFocus = false
   circleDistances = screen.width/6
   randomx = 0
   randomy = 0
-  
+  //stores a list of all attacking bodies
+  //the physics engine doesn't take too kindly to my class so this is needed
   focusCircles = []
-  
+  //variables to be used for creating attacking bodies
   mainComplete = false
   smallCirclesComplete = false
   removingCircles = false
-  
+  circleCountUp = 1
+  //same as the variables for the attacking bodes
+  //just oriented for the warnings
   warningFocusCircles = []
-  
   warningMainComplete = false
   warningSmallCirclesComplete = false
   removingWarningCircles = false
   warningCircleCountingUp = 1
-  
 }
-
+//main function to be called whenever the attack is needed
 function focus(){
   focusTimer = 300
   attackingFocus = true
   randomx = (Math.random() * (screen.width/5)) - (screen.width/2);
   randomy = (Math.random() * (screen.height*0.1)) + (screen.height/2) - (screen.height*0.9)
-  
 }
-
+//main function for checking once the timer has started
 function updateFocus(){
+  //creates warning circles to warn the player of the attacks
+  //they eventually go away before the actual attack
   if(focusTimer == 300 && attackingFocus == true && warningMainComplete == false){
     warningMainAura = Shapes.createCircle(vessel.position.x, vessel.position.y, 130, {isSensor: true, label: "warning"})
     warningMainComplete = true
   }
-
   if(focusTimer == 280 && attackingFocus == true){
     Matter.Composite.remove(engine.world, warningMainAura)
   }
@@ -1112,7 +886,6 @@ function updateFocus(){
     warningFocusCircles.push(warningCircle0)
   }
   if(focusTimer < 278 && focusTimer > 249 && attackingFocus == true && warningSmallCirclesComplete == false){
-    
   if(focusTimer % 6 == 0 && warningCircleCountingUp < 6){
     var circleName = "warningCircle" + warningCircleCountingUp
     if(warningCircleCountingUp % 2 != 0){
@@ -1124,32 +897,24 @@ function updateFocus(){
     } else if(warningCircleCountingUp % 2 == 0){
       window[circleName] = Shapes.createCircle((warningCircleCountingUp * circleDistances + randomx), randomy, 30, {isSensor: true, label: "warning"})
     }
-  
     warningFocusCircles.push(window[circleName])
     warningCircleCountingUp++
   }
-    
   if(warningCircleCountingUp == 6){
       warningCircleCountingUp = 0
       warningSmallCirclesComplete = true
     }
-    
   }
-
   if(focusTimer == 220 && attackingFocus == true){
     for(var k = 0; k < 6; k++){
       Matter.Composite.remove(engine.world, warningFocusCircles[k])
     }
   }
-  
-  
-//actually doing damage here
-  
+  //main code to spawn the circles that actually do the damage
   if(focusTimer == 200 && attackingFocus == true && mainComplete == false){
     mainAura = Shapes.createCircle(vessel.position.x, vessel.position.y, 130, {isSensor: true, label: "hazard"})
     mainComplete = true
   }
-  
   if(focusTimer == 180 && attackingFocus == true){
     Matter.Composite.remove(engine.world, mainAura)
   }
@@ -1157,14 +922,9 @@ function updateFocus(){
     circle0 = Shapes.createCircle(randomx, randomy, 30, {isSensor:true, label: "hazard"})
     focusCircles.push(circle0)
   }
-  
-  
-  
   if(focusTimer < 175 && focusTimer > 135 && attackingFocus == true && smallCirclesComplete == false){
-    
-  if(focusTimer % 6 == 0 && circleCountUp < 6){
-    var circleName = "circle" + circleCountUp
-  
+    if(focusTimer % 6 == 0 && circleCountUp < 6){
+      var circleName = "circle" + circleCountUp
     if(circleCountUp % 2 != 0){
       if(randomy <= 0){
         window[circleName] = Shapes.createCircle((circleCountUp * circleDistances + randomx), randomy + 30, 30, {isSensor: true, label: "hazard"})
@@ -1174,17 +934,15 @@ function updateFocus(){
     } else if(circleCountUp % 2 == 0){
       window[circleName] = Shapes.createCircle((circleCountUp * circleDistances + randomx), randomy, 30, {isSensor: true, label: "hazard"})
     }
-  
   focusCircles.push(window[circleName])
   circleCountUp++
-}
-    
+    }
     if(circleCountUp == 6){
       circleCountUp = 0
       smallCirclesComplete = true
     }
   }
-  
+  //removes the attacks one by one after a certain increment of time
   if(focusTimer <= 135 && attackingFocus == true){
     if(focusTimer%7 == 0 && circleCountUp < 6){
       Matter.Composite.remove(engine.world, focusCircles[circleCountUp])
@@ -1193,9 +951,7 @@ function updateFocus(){
     if(focusTimer == 90){
       focusTimer = 0
     }
-    
   }
-  
   // Reset attack flags
   if(focusTimer == 0 && attackingFocus == true){
     attackingFocus = false
@@ -1212,7 +968,6 @@ function updateFocus(){
     warningCircleCountingUp = 1
     
   }
-
   // Handle the frame countdown
   if(focusTimer > 0){
     focusTimer--
@@ -1221,62 +976,55 @@ function updateFocus(){
 
 
 
+//function to store all variables needed
 function initLegs(){
   legTimer = 0
   attackingLegs = false
   legsDirection = ""
 }
-
+//function to start legs
 function legs(){
+  //changes boss position before starting the rockets attack
   if(Math.random() < 0.5) {
     bossJumpOpposite()
   } else {
     bossTeleportOpposite()
   }
-  
+  //resets timer and condition for attacking
   legTimer = 120
   attackingLegs = true
-  
+}
+//function to update legs
+function updateLegs(){
+  //sets direction based on where the vessel is located on screen
   if(vessel.position.x > 0){
     legsDirection = "left"
   }else{
     legsDirection = "right"
   }
-  
-}
-
-function updateLegs(){
-  if(vessel.position.x > 0 && legTimer == 90){
+  //spawns warning legs
+  if(legsDirection == "left" && legTimer == 90){
     octopusLegs = Shapes.createTrap(vessel.position.x - ((0.5*screen.width)/2), vessel.position.y, 55, 0.5 * screen.width, 0.5, {isSensor: true, label: "warning", angle: (Math.PI)/2.1})
-    legsDirection = "right"
-  } else if (vessel.position.x < 0 && legTimer == 90){
-    //forwards
+  } else if (legsDirection == "right" && legTimer == 90){
     octopusLegs = Shapes.createTrap(vessel.position.x + ((0.5*screen.width)/2), vessel.position.y, 55, 0.5 * screen.width, 0.5, {isSensor: true, label: "warning", angle: -(Math.PI)/2.1})
-    legsDirection = "left"
   }
-  if(legTimer < 90 && legTimer > 50){
-    if(legsDirection == "right"){
-      Matter.Body.setPosition(octopusLegs, {x: vessel.position.x - ((0.5*screen.width)/2), y: vessel.position.y})
-    }else if(legsDirection == "left"){
-      Matter.Body.setPosition(octopusLegs, {x: vessel.position.x + ((0.5*screen.width)/2), y: vessel.position.y})
-    }
-    
-  }
+
+  //removes the warning legs
   if(legTimer == 55){
     Matter.Composite.remove(engine.world, octopusLegs)
   }
+  //creates the legs that do damage
   if(vessel.position.x > 0 && legTimer == 50){
-    //backwards
     octopusLegs = Shapes.createTrap(vessel.position.x - ((0.5*screen.width)/2), vessel.position.y, 55, 0.5 * screen.width, 0.5, {isSensor: true, label: "hazard", angle: (Math.PI)/2.1})
   } else if (vessel.position.x < 0 && legTimer == 50){
-    //forwards
     octopusLegs = Shapes.createTrap(vessel.position.x + ((0.5*screen.width)/2), vessel.position.y, 55, 0.5 * screen.width, 0.5, {isSensor: true, label: "hazard", angle: -(Math.PI)/2.1})
   }
-  
+  //resets conditions for octopus legs to be called again
   if(legTimer == 0 && attackingLegs == true){
     Matter.Composite.remove(engine.world, octopusLegs)
     attackingLegs = false
   }
+  //counts the timer down
   if(legTimer > 0){
     legTimer--
 
@@ -1284,32 +1032,33 @@ function updateLegs(){
   
 }
 
+//defining variables for rockets
 function initRockets(){
+  //defining the timer and whether the boss is rocketing
   rocketInterval = 0
   currentlyRocketing = false
-  
 }
-
+//function called whenver rockets is called
 function rockets(){
-    if(Math.random() < 0.5) {
+  //changes boss position before starting the rockets attack
+  if(Math.random() < 0.5) {
     bossJumpOpposite()
   } else {
     bossTeleportOpposite()
   }
-  
+  //initial conditions for rocketing to start
   currentlyRocketing = true
   rocketInterval = 100
 }
-
+//function to change rockets depending on time
 function updateRockets(){
+  //about 1 second occurs before rockets begins to allow for the movement to occur before launching rockets
   if(rocketInterval == 45){
-    
-    
+    //creates all the rockets that changes based off of angle
     for(var i=0; i < 8; i++){
       var name = "rocket" + i
       var angle
       var vector
-    
       if(vessel.position.x < 0){
         angle = (Math.PI * i)/10 - Math.PI/6
         vector = Matter.Vector.rotate({x: 5 + 0.375 * i, y: 0}, angle)
@@ -1320,25 +1069,25 @@ function updateRockets(){
         vector = Matter.Vector.rotate({x: 5 + 0.375 * i, y:0}, angle)
         name = Shapes.createBox(vessel.position.x - 20, vessel.position.y + 30, 30, 4, {isSensor: true, angle: angle, label: "hazard", frictionAir: 0})
       }
-    
-    Matter.Body.setVelocity(name, vector)
-
+      Matter.Body.setVelocity(name, vector)
     }
   }
+  //timer for counting down
   if(rocketInterval > 0){
     rocketInterval--
   }
+  //resets all variables for rocketing to be called again
   if(rocketInterval == 0 && currentlyRocketing){
     currentlyRocketing = false
   }
   
 }
-
+//function to draw the warning rockets
 function drawRocketsWarning(){
+  //applies the same logic for the rockets, except uses lines instead of physics bodies
   if(rocketInterval < 70 && rocketInterval > 45 && currentlyRocketing){
     var startX = vessel.position.x < 0 ? vessel.position.x + 20 : vessel.position.x - 20;
     var startY = vessel.position.y + 30;
-    
     for(var i = 0; i < 8; i++){
       var angle;
       if(vessel.position.x < 0){
@@ -1346,15 +1095,13 @@ function drawRocketsWarning(){
       } else {
         angle = -(Math.PI * i)/10 - (Math.PI * 5)/6;
       }
-      
       var targetX = startX + 1000 * Math.cos(angle);
       var targetY = startY + 1000 * Math.sin(angle);
-      
       screen.drawLine(startX, startY, targetX, targetY, "rgb(255, 255, 0)");
     }
   }
 }
-
+//function to clear the rockets that go off screen
 function clearOffScreenHazards(){
   var allCurrentBodies = Matter.Composite.allBodies(engine.world)
   for(var i = 0; i < allCurrentBodies.length; i++){
@@ -1368,22 +1115,32 @@ function clearOffScreenHazards(){
 
 function initSpikes(){
   bossSpiking = false
+  //pause in air after either jumping or teleporting above you
   midairSpikePause = 0
+  //time between landing on ground and spikes forming
   preSpikeTimer = 0
+  //duration spikes are out
   spikeTimer = 0
+  //stops the dive from going through the floor
   canFall = false
+  //stores all of the spikes
   spikeList = []
+  //stores the spike warnings
   preSpikeList = []
+  //ensures the spikes only form once
   spikesForming = false
+  //ensures the spike warnings only form once
   preSpikesForming = false
 }
 
 function spikes(){
+  //boss either teleports above you or jumps there
   if(Math.random() < 0.5) {
     bossJumpTop()
   } else {
     bossTeleportTop()
   }
+  //initial conditions for spiking
   bossSpiking = true
   midairSpikePause = 40
   preSpikeTimer = 50
@@ -1393,27 +1150,30 @@ function spikes(){
 }
 
 function updateSpikes(){
+  //countdowns time to when it starts dive
   if(midairSpikePause > 0){
     canFall = true
     midairSpikePause--
   }
+  //the dive
   if(bossSpiking && midairSpikePause == 0 && canFall){
     Matter.Body.setPosition(vessel, {x: vessel.position.x, y: vessel.position.y-15})
   }
+  //stops the dive and does delay between spike warnings and spikes
   if(vessel.position.y <= -65 && preSpikeTimer>0 && bossSpiking){
-    //stops the dive
     canFall = false
     Matter.Body.setPosition(vessel, {x: vessel.position.x, y: -65})
     
     preSpikeTimer--
   }
+  //makes the spike warnings
   if(vessel.position.y <= -65 && preSpikeTimer>0 && bossSpiking && preSpikesForming && midairSpikePause == 0){
     for(var i = 0; i<11; i++){
       preSpikeList.push(Shapes.createBox(-200 + 40 * i, -80, 10, 30, {isSensor: true, label: "warning", frictionAir: 0, restitution: 1}))
     }
     preSpikesForming = false
   }
-  
+  //makes the spikes
   if(preSpikeTimer == 0 && bossSpiking && spikesForming){
     Matter.Composite.remove(engine.world, preSpikeList)
     for(var i = 0; i<11; i++){
@@ -1421,11 +1181,11 @@ function updateSpikes(){
     }
     spikesForming = false
   }
-  
+  //sets the time the spikes are out
   if(spikesForming == false && bossSpiking && spikeTimer>0){
     spikeTimer--
   }
-  
+  //ends the spike attack
   if(spikeTimer == 0 && bossSpiking){
     Matter.Composite.remove(engine.world, spikeList)
     bossSpiking = false
@@ -1452,7 +1212,7 @@ function initSlash(){
 function slash(){
   //stores current boss position to define whether the boss should move left and right
   currentVesselPosition = vessel.position.x
-  //sets slashingDirection to eitehr left or right
+  //sets slashingDirection to either left or right
   if(vessel.position.x - player.position.x > 0){
     slashingDirection = "left"
   }else{
@@ -1464,8 +1224,11 @@ function slash(){
   slashCounter = 1
 }
 
+//main call for udpating slash
 function updateSlash(){
   //1/60 of a second after starting 
+  //create a warning triangle indicating direction
+  //dependent on whether slashing direction is left or right
   if(slashingInterval == 99){
     if(slashingDirection == "right"){
       warningSlash = Shapes.createPoly(vessel.position.x + 45, vessel.position.y - 10, 3, 10, {isSensor:true, label: "warning", angle:Math.PI/3}) 
@@ -1473,16 +1236,19 @@ function updateSlash(){
       warningSlash = Shapes.createPoly(vessel.position.x - 45, vessel.position.y - 10, 3, 10, {isSensor:true, label: "warning"}) 
     }
   }
-  if(slashingInterval < 99 && slashingInterval > 42){
+  //moves warning slash to be wherever the boss is between time 99 and 70
+  if(slashingInterval < 99 && slashingInterval > 70){
     if(slashingDirection == "right"){
       Matter.Body.setPosition(warningSlash, {x: vessel.position.x + 45, y: vessel.position.y - 10,}) 
     }else if(slashingDirection == "left"){
       Matter.Body.setPosition(warningSlash, {x: vessel.position.x - 45, y: vessel.position.y - 10}) 
     }
   }
-  if(slashingInterval == 60){
+  //removes the slash 1/2 a second a second later
+  if(slashingInterval == 70){
     Matter.Composite.remove(engine.world, warningSlash)
   }
+  //at time 42 create a box that does damage depending on direction
   if(slashingInterval == 42){
     if(slashingDirection == "left"){
       slashAttack = Shapes.createBox(vessel.position.x - 45, vessel.position.y - 10, 50, 50, {isSensor: true, label: "hazard"})
@@ -1490,12 +1256,13 @@ function updateSlash(){
       slashAttack = Shapes.createBox(vessel.position.x + 45, vessel.position.y - 10, 50, 50, {isSensor: true, label: "hazard"})
     }
   }
-  if(slashingInterval == 42){
+  //changes slash type depending on what counter it is
+  if(slashingInterval == 54){
     slashCounter++
   }else if(slashingInterval == 18){
     slashCounter++
   }
-  
+  //changes slash position based off of boss position and changes based off of  slashCounter increasing
   if(currentlySlashing == true){
     if(slashingInterval <= 42 && slashAttack){
       if(slashingDirection == "left"){
@@ -1524,11 +1291,11 @@ function updateSlash(){
       }
     }
   } 
-
+  //timer for counting down
   if(slashingInterval > 0){
     slashingInterval--
   }
-  
+  //at time 0 reset all variables and remove the attack
   if(slashingInterval == 0 && currentlySlashing == true){
     currentlySlashing = false 
     slashingDirection = ""
